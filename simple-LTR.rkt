@@ -43,7 +43,7 @@
   #:mode (is-U I)
   #:contract (is-U t)
   [-------------- "IsUnion"
-                  (is-U (U t_1 ...))])
+   (is-U (U t_1 ...))])
 
 (define-judgment-form λTR
   #:mode (non-U I)
@@ -144,7 +144,7 @@
             (neg_1 ...)
             ()
             P_1)
-  ------------------- "L-Update-Is"
+   ------------------- "L-Update-Is"
    (proves* (is_1 ... (o_1 -: t_1) is_2 ... (o_1 -: t_2) is_3 ...)
             (neg_1 ...)
             ()
@@ -157,7 +157,7 @@
             (neg_1 ... (o_1 -! t_2) neg_2 ...)
             ()
             P_1)
-  ------------------- "L-Update-Neg"
+   ------------------- "L-Update-Neg"
    (proves* (is_1 ... (o_1 -: t_1) is_2 ...)
             (neg_1 ... (o_1 -! t_2) neg_2 ...)
             ()
