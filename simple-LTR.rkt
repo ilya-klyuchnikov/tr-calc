@@ -1,24 +1,61 @@
 #lang racket
 
-(require redex)
+(require redex/reduction-semantics)
 
 (module+ test
-  (require redex)
   (require rackunit))
 
 (define-language λTR
-  [x   ::= variable-not-otherwise-mentioned]
-  [b   ::= boolean]
-  [z   ::= integer]
-  [e   ::= (ann x t) (e e) (λ ([x : t]) e) (if e e e) 
-       c b z string (let ([x e]) e)]
-  [c   ::= add1 zero? int? str? bool? proc? str-len + error]
-  [o   ::= x]
-  [oo  ::= o Null]
-  [t   ::= Top T F Int Str (U t ...) (λ x t t P P oo)]
-  [is  ::= (o -: t)]
-  [neg ::= (o -! t)]
-  [P   ::= is neg (OR P P) (AND P P) TT FF]
+  [x   ::=
+       variable-not-otherwise-mentioned]
+  [b   ::=
+       boolean]
+  [z   ::=
+       integer]
+  [e   ::=
+       (ann x t)
+       (e e)
+       (λ ([x : t]) e)
+       (if e e e)
+       c
+       b
+       z
+       string
+       (let ([x e]) e)]
+  [c   ::=
+       add1
+       zero?
+       int?
+       str?
+       bool?
+       proc?
+       str-len
+       +
+       error]
+  [o   ::=
+       x]
+  [oo  ::=
+       o
+       Null]
+  [t   ::=
+       Top
+       T
+       F
+       Int
+       Str
+       (U t ...)
+       (λ x t t P P oo)]
+  [is  ::=
+       (o -: t)]
+  [neg ::=
+       (o -! t)]
+  [P   ::=
+       is
+       neg
+       (OR P P)
+       (AND P P)
+       TT
+       FF]
   [E   ::= (P ...)])
 
 (define-judgment-form λTR
@@ -27,7 +64,7 @@
   [------------ "NotEqual"
    (<> any_!_1 any_!_1)])
 
-(define-metafunction λTR 
+(define-metafunction λTR
   app : (any ...) ... -> (any ...)
   [(app (any_1 ...)) (any_1 ...)]
   [(app (any_1 ...) (any_2 ...) ...) (app (any_1 ... any_2 ...) ...)])
