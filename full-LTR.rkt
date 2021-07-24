@@ -147,10 +147,10 @@
   ; L-Update-Is
   [(where is_new ((obj (pe_1 ...) x_1) -: (update t_1 #t t_2 (pe_2 ...))))
    (not-in is_new (is_1 ... 
-                  ((obj (pe_1 ...) x_1) -: t_1) 
-                  is_2 ... 
-                  ((obj (pe_2 ... pe_1 ...) x_1) -: t_2) 
-                  is_3 ...))
+                   ((obj (pe_1 ...) x_1) -: t_1) 
+                   is_2 ... 
+                   ((obj (pe_2 ... pe_1 ...) x_1) -: t_2) 
+                   is_3 ...))
    (proves* (is_new is_1 ... 
                     ((obj (pe_1 ...) x_1) -: t_1) 
                     is_2 ... 
@@ -159,12 +159,12 @@
             (neg_1 ...)
             ()
             P_1)
-  ------------------- "L-Update-Is"
+   ------------------- "L-Update-Is"
    (proves* (is_1 ... 
-                  ((obj (pe_1 ...) x_1) -: t_1) 
-                  is_2 ... 
-                  ((obj (pe_2 ... pe_1 ...) x_1) -: t_2) 
-                  is_3 ...)
+             ((obj (pe_1 ...) x_1) -: t_1) 
+             is_2 ... 
+             ((obj (pe_2 ... pe_1 ...) x_1) -: t_2) 
+             is_3 ...)
             (neg_1 ...)
             ()
             P_1)]
@@ -176,7 +176,7 @@
             (neg_1 ... ((obj (pe_2 ... pe_1 ...) x_1) -! t_2) neg_2 ...)
             ()
             P_1)
-  ------------------- "L-Update-Neg"
+   ------------------- "L-Update-Neg"
    (proves* (is_1 ... ((obj (pe_1 ...) x_1) -: t_1) is_2 ...)
             (neg_1 ... ((obj (pe_2 ... pe_1 ...) x_1) -! t_2) neg_2 ...)
             ()
@@ -301,15 +301,15 @@
 (define-metafunction λTR
   restrict : t t -> t
   [(restrict t_1 t_2) (U)
-   (judgment-holds (type-conflict t_1 t_2))
-   (judgment-holds (non-U t_1))]
+                      (judgment-holds (type-conflict t_1 t_2))
+                      (judgment-holds (non-U t_1))]
   [(restrict t_1 t_2) t_1
-   (judgment-holds (subtype t_1 t_2))
-   (judgment-holds (non-U t_1))]
+                      (judgment-holds (subtype t_1 t_2))
+                      (judgment-holds (non-U t_1))]
   [(restrict t_1 t_2) t_2
-   (judgment-holds (common-val t_1 t_2))
-   (where #f (subtype t_1 t_2))
-   (judgment-holds (non-U t_1))]
+                      (judgment-holds (common-val t_1 t_2))
+                      (where #f (subtype t_1 t_2))
+                      (judgment-holds (non-U t_1))]
   [(restrict (U) t_2) (U)]
   [(restrict (U t_1) t_2) (restrict t_1 t_2)]
   [(restrict (U t_1 t_2 ...) t_3) (U (restrict t_1 t_3) (restrict (U t_2 ...) t_3))])
@@ -318,11 +318,11 @@
 (define-metafunction λTR
   remove : t t -> t
   [(remove t_1 t_2) (U)
-   (judgment-holds (subtype t_1 t_2))
-   (judgment-holds (non-U t_1))]
+                    (judgment-holds (subtype t_1 t_2))
+                    (judgment-holds (non-U t_1))]
   [(remove t_1 t_2) t_1
-   (where #f (subtype t_1 t_2))
-   (judgment-holds (non-U t_1))]
+                    (where #f (subtype t_1 t_2))
+                    (judgment-holds (non-U t_1))]
   [(remove (U) t_2) (U)]
   [(remove (U t_1) t_2) (remove t_1 t_2)]
   [(remove (U t_1 t_2 ...) t_3) (U (remove t_1 t_3) (remove (U t_2 ...) t_3))])
@@ -344,7 +344,7 @@
   (check-true (judgment-holds (eqv-type? (restrict (U T F) (U T Int)) T)))
   (check-true (judgment-holds (eqv-type? (restrict (U (U (U T) F)) (U T Int Str)) T)))
 
-                                        ; remove tests
+  ; remove tests
   (check-true (judgment-holds (eqv-type? (remove Int Int) (U))))
   (check-true (judgment-holds (eqv-type? (remove Int Str) Int)))
   (check-true (judgment-holds (eqv-type? (remove Int (U Int Str)) (U))))
@@ -388,7 +388,7 @@
   [(subst-oo Null x_1 (obj π_1 x_1)) Null]
   [(subst-oo (obj π_2 x_2) x_1 (obj π_1 x_1)) (obj (app π_1 π_2) x_2)]
   [(subst-oo oo x_2 (obj π_1 x_1)) (obj π_1 x_1)
-   (judgment-holds (<> x_2 x_1))])
+                                   (judgment-holds (<> x_2 x_1))])
 
 (define-metafunction λTR
   subst-P : oo x P -> P
@@ -399,17 +399,17 @@
   [(subst-P Null x_1 ((obj π_1 x_1) -: t_1)) TT]
   [(subst-P Null x_1 ((obj π_1 x_1) -! t_1)) TT]
   [(subst-P oo_1 x_1 ((obj π_2 x_2) -: t_1)) ((obj π_2 x_2) -: t_1)
-   (judgment-holds (<> x_1 x_2))
-   (judgment-holds (not-in x_1 (free-vars t_1)))]
+                                             (judgment-holds (<> x_1 x_2))
+                                             (judgment-holds (not-in x_1 (free-vars t_1)))]
   [(subst-P oo_1 x_1 ((obj π_2 x_2) -! t_1)) ((obj π_2 x_2) -! t_1)
-   (judgment-holds (<> x_1 x_2))
-   (judgment-holds (not-in x_1 (free-vars t_1)))]
+                                             (judgment-holds (<> x_1 x_2))
+                                             (judgment-holds (not-in x_1 (free-vars t_1)))]
   [(subst-P oo_1 x_1 ((obj π_2 x_2) -: t_1)) TT
-   (judgment-holds (<> x_1 x_2))
-   (judgment-holds (in x_1 (free-vars t_1)))]
+                                             (judgment-holds (<> x_1 x_2))
+                                             (judgment-holds (in x_1 (free-vars t_1)))]
   [(subst-P oo_1 x_1 ((obj π_2 x_2) -! t_1)) TT
-   (judgment-holds (<> x_1 x_2))
-   (judgment-holds (in x_1 (free-vars t_1)))]
+                                             (judgment-holds (<> x_1 x_2))
+                                             (judgment-holds (in x_1 (free-vars t_1)))]
   [(subst-P oo_1 x_1 (AND P_1 P_2)) 
    (AND (subst-P oo_1 x_1 P_1) (subst-P oo_1 x_1 P_2))]
   [(subst-P oo_1 x_1 (OR P_1 P_2)) 
@@ -524,29 +524,29 @@
 (define-metafunction λTR
   norm-P : P -> P
   [(norm-P P_1) (norm-P (normalize-P P_1))
-   (judgment-holds (<> P_1 (normalize-P P_1)))]
+                (judgment-holds (<> P_1 (normalize-P P_1)))]
   [(norm-P P_1) P_1
-   (where P_1 (normalize-P P_1))])
+                (where P_1 (normalize-P P_1))])
 
 
 (define-metafunction λTR
-    reduce-P : E P -> P
-    [(reduce-P E_1 TT) TT]
-    [(reduce-P E_1 FF) FF]
-    [(reduce-P E_1 (o_1 -: t_1)) FF
-     (judgment-holds (proves E_1 (o_1 -! t_1)))]
-    [(reduce-P E_1 (o_1 -: t_1)) (o_1 -: t_1)
-     (where #f (proves E_1 (o_1 -! t_1)))]
-    [(reduce-P E_1 (o_1 -! t_1)) FF
-     (judgment-holds (proves E_1 (o_1 -: t_1)))]
-    [(reduce-P E_1 (o_1 -! t_1)) (o_1 -! t_1)
-     (where #f (proves E_1 (o_1 -: t_1)))]
-    [(reduce-P [P_3 ...] (AND P_1 P_2))
-     (AND (reduce-P [P_2 P_3 ...] P_1) 
-          (reduce-P [P_1 P_3 ...] P_2))]
-    [(reduce-P E_1 (OR P_1 P_2))
-     (OR (reduce-P E_1 P_1)
-         (reduce-P E_1 P_2))])
+  reduce-P : E P -> P
+  [(reduce-P E_1 TT) TT]
+  [(reduce-P E_1 FF) FF]
+  [(reduce-P E_1 (o_1 -: t_1)) FF
+                               (judgment-holds (proves E_1 (o_1 -! t_1)))]
+  [(reduce-P E_1 (o_1 -: t_1)) (o_1 -: t_1)
+                               (where #f (proves E_1 (o_1 -! t_1)))]
+  [(reduce-P E_1 (o_1 -! t_1)) FF
+                               (judgment-holds (proves E_1 (o_1 -: t_1)))]
+  [(reduce-P E_1 (o_1 -! t_1)) (o_1 -! t_1)
+                               (where #f (proves E_1 (o_1 -: t_1)))]
+  [(reduce-P [P_3 ...] (AND P_1 P_2))
+   (AND (reduce-P [P_2 P_3 ...] P_1) 
+        (reduce-P [P_1 P_3 ...] P_2))]
+  [(reduce-P E_1 (OR P_1 P_2))
+   (OR (reduce-P E_1 P_1)
+       (reduce-P E_1 P_2))])
 
 (module+ test
   (check-equal? (term (reduce-P [] (AND (OR ((var x) -: Int) 
@@ -561,8 +561,8 @@
                 (term (AND FF FF))))
 
 (define-metafunction λTR
-    simplify-P : P -> P
-    [(simplify-P P_1) (reduce-P [] (norm-P P_1))])
+  simplify-P : P -> P
+  [(simplify-P P_1) (reduce-P [] (norm-P P_1))])
 
 
 
@@ -583,7 +583,7 @@
   [(δt cons) (λ x Top (U T F) 
                ((var x) -: (Top * Top))
                ((var x) -! (Top * Top))
-                Null)])
+               Null)])
 
 (define-metafunction λTR
   oo-join : oo oo -> oo
@@ -595,12 +595,12 @@
 (define-metafunction λTR
   t-join : t t -> t
   [(t-join t_1 t_2) t_2
-   (judgment-holds (subtype t_1 t_2))]
+                    (judgment-holds (subtype t_1 t_2))]
   [(t-join t_1 t_2) t_1
-   (judgment-holds (subtype t_2 t_1))]
+                    (judgment-holds (subtype t_2 t_1))]
   [(t-join t_1 t_2) (U t_1 t_2)
-   (where #f (subtype t_1 t_2))
-   (where #f (subtype t_2 t_1))])
+                    (where #f (subtype t_1 t_2))
+                    (where #f (subtype t_2 t_1))])
 
 
 (define-judgment-form λTR
@@ -728,7 +728,7 @@
   [(Option t_1) (U t_1 F)])
 
 (module+ test
-; Example 1
+  ; Example 1
   (check-true 
    (judgment-holds 
     (typeof* [((var x) -: Top)] 
@@ -839,21 +839,22 @@
              ((var x) -: (U Int Str)) ((var x) -! (U Int Str))
              Null)))
 
-                                        ; Example 4
-  (check-true (judgment-holds 
-               (typeof* [((var f) -: (λ x (U Int Str) Int TT FF Null))
-                         ((var x) -: Top)]
-                        (if (or (int? (ann x Top))
-                                (str? (ann x Top)))
-                            ((ann f (λ x (U Int Str) Int TT FF Null))
-                             (ann x (U Int Str)))
-                            0)
-                        Int
-                        TT FF
-                        Null)))
+  ; Example 4
+  (check-true
+   (judgment-holds 
+    (typeof* [((var f) -: (λ x (U Int Str) Int TT FF Null))
+              ((var x) -: Top)]
+             (if (or (int? (ann x Top))
+                     (str? (ann x Top)))
+                 ((ann f (λ x (U Int Str) Int TT FF Null))
+                  (ann x (U Int Str)))
+                 0)
+             Int
+             TT FF
+             Null)))
 
 
-                                        ; Example 5
+  ; Example 5
   (check-true 
    (judgment-holds 
     (typeof* [((var x) -: Top) ((var y) -: Top)]
@@ -864,7 +865,7 @@
              TT FF
              Null)))
 
-                                        ; Example 6
+  ; Example 6
   (check-false 
    (judgment-holds 
     (typeof* [((var x) -: Top) ((var y) -: Top)]
@@ -875,7 +876,7 @@
              TT FF
              Null)))
 
-                                        ; Example 7
+  ; Example 7
   (check-true 
    (judgment-holds 
     (typeof* [((var x) -: Top) ((var y) -: Top)]
@@ -886,7 +887,7 @@
              TT FF
              Null)))
 
-                                        ; Example 8
+  ; Example 8
   (check-true 
    (judgment-holds 
     (typeof* [((var x) -: Top)]
@@ -898,7 +899,7 @@
              ((var x) -: (U Str Int)) ((var x) -! (U Str Int))
              Null)))
 
-                                        ; Example 9
+  ; Example 9
   (check-true 
    (judgment-holds 
     (typeof* [((var x) -: Top)]
@@ -917,7 +918,7 @@
              Null)))
 
 
-                                        ; Example 10
+  ; Example 10
   (check-true 
    (judgment-holds 
     (typeof* [((var p) -: (Top * Top))]
@@ -928,7 +929,7 @@
              TT FF
              Null)))
 
-                                        ; Example 11
+  ; Example 11
   (check-true 
    (judgment-holds 
     (typeof* [((var p) -: (Top * Top))
@@ -942,7 +943,7 @@
              TT FF
              Null)))
 
-                                        ;Example 12
+  ;Example 12
   (check-true 
    (judgment-holds 
     (typeof* []
@@ -973,7 +974,7 @@
              FF
              Null)))
 
-                                        ; Example 13
+  ; Example 13
   (check-true 
    (judgment-holds 
     (typeof* [((var x) -: Top) ((var y) -: (U Int Str))]
@@ -986,7 +987,7 @@
              TT FF
              Null)))
 
-                                        ; Example 14
+  ; Example 14
   (check-true 
    (judgment-holds 
     (typeof* [((var x) -: Top)]
