@@ -213,6 +213,7 @@
   #:contract (subobj oo oo)
   [------------------- "SO-Refl"
    (subobj oo_1 oo_1)]
+
   [------------------- "SO-Top"
    (subobj oo_1 Null)])
 
@@ -241,26 +242,35 @@
    (proves [(subst-P x_2 x_1 P_1-)] P_2-)
    ------------------------------------------ "S-Fun"
    (subtype (λ x_1 t_1 t_2 P_1+ P_1- oo_1)
-            (λ x_2 t_3 t_4 P_2+ P_2- oo_2))])
+            (λ x_2 t_3 t_4 P_2+ P_2- oo_2))]
+  )
 
 (define-judgment-form λTR
   #:mode (common-val I I)
   #:contract (common-val t t)
+
   [------------------ "CS-Eq"
    (common-val t_1 t_1)]
+
   [------------------ "CS-Top-lhs"
    (common-val Top t_1)]
+
   [------------------ "CS-Top-rhs"
    (common-val t_1 Top)]
+
   [(common-val t_2 t_4)
    ------------------ "CS-U-lhs"
    (common-val (U t_1 ... t_2 t_3 ...) t_4)]
+
   [(common-val t_2 t_4)
    ------------------ "CS-U-rhs"
    (common-val t_4 (U t_1 ... t_2 t_3 ...))]
+
   [------------------ "CS-Abs"
    (common-val (λ x_1 t_1 t_2 P_1 oo_1)
-               (λ x_2 t_3 t_4 P_2 oo_2))])
+               (λ x_2 t_3 t_4 P_2 oo_2))]
+  )
+
 
 (module+ test
   (check-true (judgment-holds (common-val Int Int)))
@@ -311,10 +321,16 @@
   [(remove (U t_1) t_2) (remove t_1 t_2)]
   [(remove (U t_1 t_2 ...) t_3) (U (remove t_1 t_3) (remove (U t_2 ...) t_3))])
 
+(define-judgment-form λTR
+  #:mode (eqv-type? I I)
+  #:contract (eqv-type? t t)
+  [(subtype t_1 t_2)
+   (subtype t_2 t_1)
+   ----------------- "Equiv-Type"
+   (eqv-type? t_1 t_2)])
 
+; restrict tests
 (module+ test
-
-  ; restrict tests
   (check-true (judgment-holds (eqv-type? (restrict Int Int) Int)))
   (check-true (judgment-holds (eqv-type? (restrict Int Top) Int)))
   (check-true (judgment-holds (eqv-type? (restrict Int (U)) (U))))
@@ -330,17 +346,6 @@
   (check-true (judgment-holds (eqv-type? (remove (U (U (U T F)) (U Int) Int)
                                                  (U (U (U T) F) T F))
                                          Int))))
-
-
-
-(define-judgment-form λTR
-  #:mode (eqv-type? I I)
-  #:contract (eqv-type? t t)
-  [(subtype t_1 t_2)
-   (subtype t_2 t_1)
-   ----------------- "Equiv-Type"
-   (eqv-type? t_1 t_2)])
-
 
 (define-metafunction λTR
   free-vars : any -> (x ...)
@@ -406,7 +411,6 @@
 
   [(subst-P oo_1 x_1 (AND P_1 P_2))
    (AND (subst-P oo_1 x_1 P_1) (subst-P oo_1 x_1 P_2))]
-
   [(subst-P oo_1 x_1 (OR P_1 P_2))
    (OR (subst-P oo_1 x_1 P_1)
        (subst-P oo_1 x_1 P_2))]
@@ -530,29 +534,19 @@
 
   [(reduce-P E_1 (x_1 -: t_1)) FF
                                (judgment-holds (proves E_1 (x_1 -! t_1)))]
-
   [(reduce-P E_1 (x_1 -: t_1)) (x_1 -: t_1)
                                (where #f (proves E_1 (x_1 -! t_1)))]
-
   [(reduce-P E_1 (x_1 -! t_1)) FF
                                (judgment-holds (proves E_1 (x_1 -: t_1)))]
-
   [(reduce-P E_1 (x_1 -! t_1)) (x_1 -! t_1)
                                (where #f (proves E_1 (x_1 -: t_1)))]
 
   [(reduce-P [P_3 ...] (AND P_1 P_2))
    (AND (reduce-P [P_2 P_3 ...] P_1)
         (reduce-P [P_1 P_3 ...] P_2))]
-
   [(reduce-P E_1 (OR P_1 P_2))
    (OR (reduce-P E_1 P_1)
        (reduce-P E_1 P_2))])
-
-
-(define-metafunction λTR
-  simplify-P : P -> P
-  [(simplify-P P_1) (reduce-P [] (norm-P P_1))])
-
 
 (module+ test
   (check-equal? (term (reduce-P [] (AND (OR (x -: Int)
@@ -565,6 +559,10 @@
   (check-equal? (term (reduce-P [] (AND (x -: Int)
                                         (x -! Int))))
                 (term (AND FF FF))))
+
+(define-metafunction λTR
+  simplify-P : P -> P
+  [(simplify-P P_1) (reduce-P [] (norm-P P_1))])
 
 (define-metafunction λTR
   δt : c -> t
@@ -667,7 +665,8 @@
                     (simplify-P (AND P_2+ P_let)))
            (subst-P oo_1 x_1
                     (simplify-P (AND P_2- P_let)))
-           (subst-oo oo_1 x_1 oo_2))])
+           (subst-oo oo_1 x_1 oo_2))]
+  )
 
 
 (define-judgment-form λTR
@@ -697,9 +696,7 @@
   Option : t -> t
   [(Option t_1) (U t_1 F)])
 
-
 (module+ test
-
   ; Example 1
   (check-true
    (judgment-holds
@@ -911,5 +908,4 @@
                        0)))
              (λ x (U Str Int) Int TT FF Null)
              TT FF
-             Null)))
-  ) ; endof test
+             Null))))

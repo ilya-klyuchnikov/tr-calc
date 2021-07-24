@@ -3,7 +3,7 @@
 (require redex/reduction-semantics)
 
 (module+ test
-  (require redex rackunit))
+  (require rackunit))
 
 (define-language λTR
   [x   ::=
@@ -247,6 +247,7 @@
 (define-judgment-form λTR
   #:mode (subtype I I)
   #:contract (subtype t t)
+
   [------------------- "S-Refl"
    (subtype t_1 t_1)]
 
@@ -261,11 +262,6 @@
    ------------------- "S-UnionSuper"
    (subtype t_1 (U t_2 ... t_3 t_4 ...))]
 
-  [(subtype t_1 t_3)
-   (subtype t_2 t_4)
-   ----------------- "S-Pair"
-   (subtype (t_1 * t_2) (t_3 * t_4))]
-
   [(subtype t_3 (subst-t (var x_2) x_1 t_1))
    (subtype (subst-t (var x_2) x_1 t_2) t_4)
    (subobj (subst-oo (var x_2) x_1 oo_1) oo_2)
@@ -273,30 +269,44 @@
    (proves [(subst-P (var x_2) x_1 P_1-)] P_2-)
    ------------------------------------------ "S-Fun"
    (subtype (λ x_1 t_1 t_2 P_1+ P_1- oo_1)
-            (λ x_2 t_3 t_4 P_2+ P_2- oo_2))])
+            (λ x_2 t_3 t_4 P_2+ P_2- oo_2))]
+
+   [(subtype t_1 t_3)
+   (subtype t_2 t_4)
+   ----------------- "S-Pair"
+   (subtype (t_1 * t_2) (t_3 * t_4))]
+  )
 
 (define-judgment-form λTR
   #:mode (common-val I I)
   #:contract (common-val t t)
+
   [------------------ "CS-Eq"
    (common-val t_1 t_1)]
+
   [------------------ "CS-Top-lhs"
    (common-val Top t_1)]
+
   [------------------ "CS-Top-rhs"
    (common-val t_1 Top)]
+
   [(common-val t_2 t_4)
    ------------------ "CS-U-lhs"
    (common-val (U t_1 ... t_2 t_3 ...) t_4)]
+
   [(common-val t_2 t_4)
    ------------------ "CS-U-rhs"
    (common-val t_4 (U t_1 ... t_2 t_3 ...))]
-  [(common-val t_1 t_3)
+
+  [------------------ "CS-Abs"
+   (common-val (λ x_1 t_1 t_2 P_1 oo_1)
+               (λ x_2 t_3 t_4 P_2 oo_2))]
+
+   [(common-val t_1 t_3)
    (common-val t_2 t_4)
    -------------------- "CS-Pair"
    (common-val (t_1 * t_2) (t_3 * t_4))]
-  [------------------ "CS-Abs"
-   (common-val (λ x_1 t_1 t_2 P_1 oo_1)
-               (λ x_2 t_3 t_4 P_2 oo_2))])
+  )
 
 
 (module+ test
@@ -489,6 +499,7 @@
      (subst-oo oo_1 x_1 oo_2))
    (judgment-holds (<> x_1 x_2))])
 
+
 (module+ test
   (check-equal? (term (subst-oo Null x (var x))) (term Null))
   (check-equal? (term (subst-P (var x) x ((var x) -: Int))) (term ((var x) -: Int)))
@@ -578,6 +589,7 @@
   reduce-P : E P -> P
   [(reduce-P E_1 TT) TT]
   [(reduce-P E_1 FF) FF]
+
   [(reduce-P E_1 (o_1 -: t_1)) FF
                                (judgment-holds (proves E_1 (o_1 -! t_1)))]
   [(reduce-P E_1 (o_1 -: t_1)) (o_1 -: t_1)
@@ -608,8 +620,6 @@
 (define-metafunction λTR
   simplify-P : P -> P
   [(simplify-P P_1) (reduce-P [] (norm-P P_1))])
-
-
 
 (define-metafunction λTR
   δt : c -> t
@@ -742,7 +752,8 @@
            t_2
            (subst-P oo_1 x_1 ((obj (CDR) x_1) -! F))
            (subst-P oo_1 x_1 ((obj (CDR) x_1) -: F))
-           (subst-oo oo_1 x_1 (obj (CDR) x_1)))])
+           (subst-oo oo_1 x_1 (obj (CDR) x_1)))]
+  )
 
 
 (define-judgment-form λTR
@@ -909,7 +920,6 @@
              Int
              TT FF
              Null)))
-
   ; Example 6
   (check-false
    (judgment-holds
@@ -920,7 +930,6 @@
              Int
              TT FF
              Null)))
-
   ; Example 7
   (check-true
    (judgment-holds
@@ -931,7 +940,6 @@
              Int
              TT FF
              Null)))
-
   ; Example 8
   (check-true
    (judgment-holds
