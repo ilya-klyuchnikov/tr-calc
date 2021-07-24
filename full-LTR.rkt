@@ -1,26 +1,71 @@
 #lang racket
 
-(require redex)
+(require redex/reduction-semantics)
 
 (module+ test
   (require redex rackunit))
 
 (define-language λTR
-  [x   ::= variable-not-otherwise-mentioned]
-  [b   ::= boolean]
-  [z   ::= integer]
-  [e   ::= (ann x t) (e e) (λ ([x : t]) e) (if e e e) 
-       c b z string (let ([x e]) e) (cons e e)]
-  [c   ::= add1 zero? int? str? bool? proc? 
-       str-len + error cons? car cdr]
-  [pe  ::= CAR CDR]
-  [π   ::= (pe ...)]
-  [o   ::= (obj π x)]
-  [oo  ::= o Null]
-  [t   ::= Top T F Int Str (U t ...) (λ x t t P P oo) (t * t)]
-  [is  ::= (o -: t)]
-  [neg ::= (o -! t)]
-  [P   ::= is neg (OR P P) (AND P P) TT FF]
+  [x   ::=
+       variable-not-otherwise-mentioned]
+  [b   ::=
+       boolean]
+  [z   ::=
+       integer]
+  [e   ::=
+       (ann x t)
+       (e e)
+       (λ ([x : t]) e)
+       (if e e e)
+       c
+       b
+       z
+       string
+       (let ([x e]) e)
+       (cons e e)]
+  [c   ::=
+       add1
+       zero?
+       int?
+       str?
+       bool?
+       proc?
+       str-len
+       +
+       error
+       cons?
+       car
+       cdr]
+  [pe  ::=
+       CAR
+       CDR]
+  [π   ::=
+       (pe ...)]
+  [o   ::=
+       (obj π x)]
+  [oo  ::=
+       o
+       Null]
+  [t   ::=
+       Top
+       T
+       F
+       Int
+       Str
+       (U t ...)
+       (λ x t t P P oo)
+       (t * t)]
+  [is  ::=
+       (o -: t)]
+  [neg ::=
+       (o -! t)]
+  [P   ::=
+       is
+       neg
+       (OR P P)
+       (AND P P)
+       TT
+       FF]
   [E   ::= (P ...)])
 
 (define-metafunction λTR
@@ -33,7 +78,7 @@
   [------------ "NotEqual"
    (<> any_!_1 any_!_1)])
 
-(define-metafunction λTR 
+(define-metafunction λTR
   app : (any ...) ... -> (any ...)
   [(app (any_1 ...)) (any_1 ...)]
   [(app (any_1 ...) (any_2 ...) ...) (app (any_1 ... any_2 ...) ...)])
@@ -60,7 +105,7 @@
 
 (define-judgment-form λTR
   #:mode (not-in I I)
-  #:contract (not-in any any) 
+  #:contract (not-in any any)
   [(side-condition ,(not (member (term any_1) (term (any_2 ...)))))
    ------------------------ "Not-In"
    (not-in any_1 (any_2 ...))])
@@ -76,7 +121,7 @@
             (neg ...)
             ()
             (o_1 -: t_2))]
-  
+
   ; L-Atom Neg
   [(proves* ((o_1 -: t_2) is_1 ...)
             (neg_1 ...)
@@ -87,90 +132,90 @@
             (neg_1 ...)
             ()
             (o_1 -! t_2))]
-  
+
   ; L-True
   [------------------- "L-True"
    (proves* (is ...) (neg ...) (P_1 ...) TT)]
-  
+
   ; L-True-skip
   [(proves* (is_1 ...) (neg_1 ...) (P_2 ...) P_1)
    ------------------- "L-True-skip"
    (proves* (is_1 ...) (neg_1 ...) (TT P_2 ...) P_1)]
-  
+
   ; L-False
   [------------------- "L-False"
    (proves* (is_1 ...) (neg_1 ...) (FF P_2 ...) P_1)]
-  
+
   ;TODO this will not work for Bot nested in Pairs... will it?
   ; L-Bot
   [(subtype t_1 (U))
    ------------------- "L-Bot"
    (proves* (is_1 ... (o_1 -: t_1) is_2 ...) (neg_1 ...) () P_1)]
-  
+
   ; L-Is-move
   [(proves* ((o_1 -: t_1) is_1 ...) (neg_1 ...) (P_1 ...) P_2)
    ------------------- "L-Is-move"
    (proves* (is_1 ...) (neg_1 ...) ((o_1 -: t_1) P_1 ...) P_2)]
-  
+
   ; L-Neg-move
   [(proves* (is_1 ...) ((o_1 -! t_1) neg_1 ...) (P_1 ...) P_2)
    ------------------- "L-Neg-move"
    (proves* (is_1 ...) (neg_1 ...) ((o_1 -! t_1) P_1 ...) P_2)]
-  
+
   ; L-AndE
   [(proves* (is_1 ...) (neg_1 ...) (P_1 P_2 P_3 ...) P_4)
    ------------------- "L-AndE"
    (proves* (is_1 ...) (neg_1 ...) ((AND P_1 P_2) P_3 ...) P_4)]
-  
+
   ; L-AndI
   [(proves* (is_1 ...) (neg_1 ...) () P_1)
    (proves* (is_1 ...) (neg_1 ...) () P_2)
    ------------------- "L-AndI"
    (proves* (is_1 ...) (neg_1 ...) () (AND P_1 P_2))]
-  
+
   ; L-OrI-lhs
   [(proves* (is_1 ...) (neg_1 ...) () P_1)
    ------------------- "L-OrI-lhs"
    (proves* (is_1 ...) (neg_1 ...) () (OR P_1 P_2))]
-  
+
   ; L-OrI-rhs
   [(proves* (is_1 ...) (neg_1 ...) () P_2)
    ------------------- "L-OrI-rhs"
    (proves* (is_1 ...) (neg_1 ...) () (OR P_1 P_2))]
-  
+
   ; L-OrE
   [(proves* (is_1 ...) (neg_1 ...) (P_1 P_3 ...) P_4)
    (proves* (is_1 ...) (neg_1 ...) (P_2 P_3 ...) P_4)
    ------------------- "L-OrE"
    (proves* (is_1 ...) (neg_1 ...) ((OR P_1 P_2) P_3 ...) P_4)]
-  
+
   ; L-Update-Is
   [(where is_new ((obj (pe_1 ...) x_1) -: (update t_1 #t t_2 (pe_2 ...))))
-   (not-in is_new (is_1 ... 
-                   ((obj (pe_1 ...) x_1) -: t_1) 
-                   is_2 ... 
-                   ((obj (pe_2 ... pe_1 ...) x_1) -: t_2) 
+   (not-in is_new (is_1 ...
+                   ((obj (pe_1 ...) x_1) -: t_1)
+                   is_2 ...
+                   ((obj (pe_2 ... pe_1 ...) x_1) -: t_2)
                    is_3 ...))
-   (proves* (is_new is_1 ... 
-                    ((obj (pe_1 ...) x_1) -: t_1) 
-                    is_2 ... 
-                    ((obj (pe_2 ... pe_1 ...) x_1) -: t_2) 
+   (proves* (is_new is_1 ...
+                    ((obj (pe_1 ...) x_1) -: t_1)
+                    is_2 ...
+                    ((obj (pe_2 ... pe_1 ...) x_1) -: t_2)
                     is_3 ...)
             (neg_1 ...)
             ()
             P_1)
    ------------------- "L-Update-Is"
-   (proves* (is_1 ... 
-             ((obj (pe_1 ...) x_1) -: t_1) 
-             is_2 ... 
-             ((obj (pe_2 ... pe_1 ...) x_1) -: t_2) 
+   (proves* (is_1 ...
+             ((obj (pe_1 ...) x_1) -: t_1)
+             is_2 ...
+             ((obj (pe_2 ... pe_1 ...) x_1) -: t_2)
              is_3 ...)
             (neg_1 ...)
             ()
             P_1)]
-  
+
   ;L-Update-Neg
-  [(where is_new ((obj (pe_1 ...) x_1) -: (update t_1 #f t_2 (pe_2 ...)))) 
+  [(where is_new ((obj (pe_1 ...) x_1) -: (update t_1 #f t_2 (pe_2 ...))))
    (not-in is_new (is_1 ... ((obj (pe_1 ...) x_1) -: t_1) is_2 ...))
    (proves* (is_new is_1 ... is_2 ... ((obj (pe_1 ...) x_1) -: t_1))
             (neg_1 ... ((obj (pe_2 ... pe_1 ...) x_1) -! t_2) neg_2 ...)
@@ -195,7 +240,7 @@
   #:contract (subobj oo oo)
   [------------------- "SO-Refl"
    (subobj oo_1 oo_1)]
-  
+
   [------------------- "SO-Top"
    (subobj oo_1 Null)])
 
@@ -204,25 +249,25 @@
   #:contract (subtype t t)
   [------------------- "S-Refl"
    (subtype t_1 t_1)]
-  
+
   [------------------- "S-Top"
    (subtype t_1 Top)]
-  
+
   [(subtype t_1 t_2) ...
    ------------------- "S-UnionSub"
    (subtype (U t_1 ...) t_2)]
-  
+
   [(subtype t_1 t_3)
    ------------------- "S-UnionSuper"
    (subtype t_1 (U t_2 ... t_3 t_4 ...))]
-  
+
   [(subtype t_1 t_3)
    (subtype t_2 t_4)
    ----------------- "S-Pair"
    (subtype (t_1 * t_2) (t_3 * t_4))]
-  
-  [(subtype t_3 (subst-t (var x_2) x_1 t_1)) 
-   (subtype (subst-t (var x_2) x_1 t_2) t_4) 
+
+  [(subtype t_3 (subst-t (var x_2) x_1 t_1))
+   (subtype (subst-t (var x_2) x_1 t_2) t_4)
    (subobj (subst-oo (var x_2) x_1 oo_1) oo_2)
    (proves [(subst-P (var x_2) x_1 P_1+)] P_2+)
    (proves [(subst-P (var x_2) x_1 P_1-)] P_2-)
@@ -250,7 +295,7 @@
    -------------------- "CS-Pair"
    (common-val (t_1 * t_2) (t_3 * t_4))]
   [------------------ "CS-Abs"
-   (common-val (λ x_1 t_1 t_2 P_1 oo_1) 
+   (common-val (λ x_1 t_1 t_2 P_1 oo_1)
                (λ x_2 t_3 t_4 P_2 oo_2))])
 
 
@@ -349,8 +394,8 @@
   (check-true (judgment-holds (eqv-type? (remove Int Str) Int)))
   (check-true (judgment-holds (eqv-type? (remove Int (U Int Str)) (U))))
   (check-true (judgment-holds (eqv-type? (remove (U Int Str) Int) Str)))
-  (check-true (judgment-holds (eqv-type? (remove (U (U (U T F)) (U Int) Int) 
-                                                 (U (U (U T) F) T F)) 
+  (check-true (judgment-holds (eqv-type? (remove (U (U (U T F)) (U Int) Int)
+                                                 (U (U (U T) F) T F))
                                          Int))))
 
 (define-metafunction λTR
@@ -365,7 +410,7 @@
   [(free-vars T) ()]
   [(free-vars F) ()]
   [(free-vars (U)) ()]
-  [(free-vars (U t_1 t_2 ...)) (app (free-vars t_1) 
+  [(free-vars (U t_1 t_2 ...)) (app (free-vars t_1)
                                     (free-vars (U t_2 ...)))]
   [(free-vars (λ x_1 t_1 t_2 P_1 P_2 oo_1))
    (app (free-vars t_1)
@@ -410,10 +455,10 @@
   [(subst-P oo_1 x_1 ((obj π_2 x_2) -! t_1)) TT
                                              (judgment-holds (<> x_1 x_2))
                                              (judgment-holds (in x_1 (free-vars t_1)))]
-  [(subst-P oo_1 x_1 (AND P_1 P_2)) 
+  [(subst-P oo_1 x_1 (AND P_1 P_2))
    (AND (subst-P oo_1 x_1 P_1) (subst-P oo_1 x_1 P_2))]
-  [(subst-P oo_1 x_1 (OR P_1 P_2)) 
-   (OR (subst-P oo_1 x_1 P_1) 
+  [(subst-P oo_1 x_1 (OR P_1 P_2))
+   (OR (subst-P oo_1 x_1 P_1)
        (subst-P oo_1 x_1 P_2))]
   [(subst-P oo_1 x_1 TT) TT]
   [(subst-P oo_1 x_1 FF) FF])
@@ -428,15 +473,15 @@
   [(subst-t oo_1 x_1 F) F]
   [(subst-t oo_1 x_1 (U)) (U)]
   [(subst-t oo_1 x_1 (U t_1)) (subst-t oo_1 x_1 t_1)]
-  [(subst-t oo_1 x_1 (U t_1 t_2 t_3 ...)) 
+  [(subst-t oo_1 x_1 (U t_1 t_2 t_3 ...))
    (U (subst-t oo_1 x_1 t_1)
       (subst-t oo_1 x_1 (U t_2 t_3 ...)))]
-  [(subst-t oo_1 x_1 (t_1 * t_2)) 
+  [(subst-t oo_1 x_1 (t_1 * t_2))
    ((subst-t oo_1 x_1 t_1) * (subst-t oo_1 x_1 t_2))]
   [(subst-t oo_1 x_1 (λ x_1 t_1 t_2 P_1 P_2 oo_2))
    (λ x_1 (subst-t oo_1 x_1 t_1) t_2 P_1 P_2 oo_2)]
   [(subst-t oo_1 x_1 (λ x_2 t_1 t_2 P_1 P_2 oo_2))
-   (λ x_2 
+   (λ x_2
      (subst-t oo_1 x_1 t_1)
      (subst-t oo_1 x_1 t_2)
      (subst-P oo_1 x_1 P_1)
@@ -460,29 +505,29 @@
   (check-false (judgment-holds (subtype (U Int T) Int)))
   (check-true (judgment-holds (subtype (U Int Int) Int)))
   (check-true (judgment-holds (subtype (U Int Int) (U Int T))))
-  (check-true (judgment-holds 
-               (subtype (λ x Top (U T F) ((var x) -: Int) ((var x) -! Int) Null) 
+  (check-true (judgment-holds
+               (subtype (λ x Top (U T F) ((var x) -: Int) ((var x) -! Int) Null)
                         (λ x Top (U T F) ((var x) -: Int) ((var x) -! Int) Null))))
-  (check-true (judgment-holds 
-               (subtype (λ x Top (U T F) ((var x) -: Int) ((var x) -! Int) Null) 
+  (check-true (judgment-holds
+               (subtype (λ x Top (U T F) ((var x) -: Int) ((var x) -! Int) Null)
                         (λ y Top (U T F) ((var y) -: Int) ((var y) -! Int) Null))))
-  (check-true (judgment-holds 
+  (check-true (judgment-holds
                (subtype (λ x Top Int TT TT Null)
                         (λ y Int (U Int T F) TT TT Null))))
 
   (check-false (judgment-holds (proves [ ] FF)))
   (check-true (judgment-holds (proves [((var x) -: Int)] ((var x) -: Int))))
-  (check-true (judgment-holds (proves [(AND ((var x) -: Int) ((var y) -: F))] 
+  (check-true (judgment-holds (proves [(AND ((var x) -: Int) ((var y) -: F))]
                                       (AND ((var y) -: F) ((var x) -: Int)))))
   (check-true (judgment-holds (proves [((var x) -: Int)] (OR ((var x) -: Int) ((var x) -: (U T F))))))
   (check-true (judgment-holds (proves [((var x) -: Int) ((var x) -! Int)] FF)))
   (check-true (judgment-holds (proves [((var x) -: Int) ((var x) -: Str)] FF)))
-  (check-true (judgment-holds (proves [((var x) -: (U T F Int)) 
-                                       (AND ((var x) -! T) ((var x) -: (U T Int)))] 
+  (check-true (judgment-holds (proves [((var x) -: (U T F Int))
+                                       (AND ((var x) -! T) ((var x) -: (U T Int)))]
                                       ((var x) -: Int))))
   (check-true (judgment-holds (proves [(OR (OR ((var z) -: (U)) FF) ((var x) -: Int))
                                        (OR ((var x) -! Int) ((var y) -: (U T F)))
-                                       (OR ((var y) -: Int) ((var z) -: (U T F)))] 
+                                       (OR ((var y) -: Int) ((var z) -: (U T F)))]
                                       ((var z) -: (U T F))))))
 
 (define-judgment-form λTR
@@ -505,19 +550,19 @@
   [(normalize-P FF) FF]
   [(normalize-P (o_1 -: t_1)) (o_1 -: t_1)]
   [(normalize-P (o_1 -! t_1)) (o_1 -! t_1)]
-  [(normalize-P (AND P_1 P_2)) 
-   (AND (normalize-P P_1) 
+  [(normalize-P (AND P_1 P_2))
+   (AND (normalize-P P_1)
         (normalize-P P_2))
    (judgment-holds (nondisj P_1))
    (judgment-holds (nondisj P_2))]
   [(normalize-P (OR P_1 P_2))
    (OR (normalize-P P_1)
        (normalize-P P_2))]
-  [(normalize-P (AND P_1 (OR P_2 P_3))) 
-   (normalize-P (OR (normalize-P (AND P_1 P_2)) 
+  [(normalize-P (AND P_1 (OR P_2 P_3)))
+   (normalize-P (OR (normalize-P (AND P_1 P_2))
                     (normalize-P (AND P_1 P_3))))]
-  [(normalize-P (AND (OR P_1 P_2) P_3)) 
-   (normalize-P (OR (normalize-P (AND P_1 P_3)) 
+  [(normalize-P (AND (OR P_1 P_2) P_3))
+   (normalize-P (OR (normalize-P (AND P_1 P_3))
                     (normalize-P (AND P_2 P_3))))
    (judgment-holds (nondisj P_3))])
 
@@ -542,21 +587,21 @@
   [(reduce-P E_1 (o_1 -! t_1)) (o_1 -! t_1)
                                (where #f (proves E_1 (o_1 -: t_1)))]
   [(reduce-P [P_3 ...] (AND P_1 P_2))
-   (AND (reduce-P [P_2 P_3 ...] P_1) 
+   (AND (reduce-P [P_2 P_3 ...] P_1)
         (reduce-P [P_1 P_3 ...] P_2))]
   [(reduce-P E_1 (OR P_1 P_2))
    (OR (reduce-P E_1 P_1)
        (reduce-P E_1 P_2))])
 
 (module+ test
-  (check-equal? (term (reduce-P [] (AND (OR ((var x) -: Int) 
+  (check-equal? (term (reduce-P [] (AND (OR ((var x) -: Int)
                                             ((var x) -: (U T F)))
                                         ((var x) -! Int))))
-                (term (AND (OR FF 
-                               ((var x) -: (U T F))) 
+                (term (AND (OR FF
+                               ((var x) -: (U T F)))
                            ((var x) -! Int))))
 
-  (check-equal? (term (reduce-P [] (AND ((var x) -: Int) 
+  (check-equal? (term (reduce-P [] (AND ((var x) -: Int)
                                         ((var x) -! Int))))
                 (term (AND FF FF))))
 
@@ -576,11 +621,11 @@
   [(δt str-len) (λ x Str Int TT FF Null)]
   [(δt error) (λ x Str (U) FF FF Null)]
   [(δt bool?) (λ x Top (U T F) ((var x) -: (U T F)) ((var x) -! (U T F)) Null)]
-  [(δt proc?) (λ x Top (U T F) 
+  [(δt proc?) (λ x Top (U T F)
                 ((var x) -: (λ y (U) Top TT TT Null))
                 ((var x) -! (λ y (U) Top TT TT Null))
                 Null)]
-  [(δt cons) (λ x Top (U T F) 
+  [(δt cons) (λ x Top (U T F)
                ((var x) -: (Top * Top))
                ((var x) -! (Top * Top))
                Null)])
@@ -608,23 +653,23 @@
   #:contract (typeof E e t P P oo)
   [-------------- "T-Num"
    (typeof E z Int TT FF Null)]
-  
+
   [-------------- "T-Str"
    (typeof E string Str TT FF Null)]
-  
+
   [-------------- "T-Const"
    (typeof E c_1 (δt c_1) TT FF Null)]
-  
+
   [-------------- "T-True"
    (typeof E #t T TT FF Null)]
-  
+
   [-------------- "T-False"
    (typeof E #f F FF TT Null)]
-  
+
   [(proves E_1 ((var x_1) -: t_1))
    -------------- "T-AnnVar"
    (typeof E_1 (ann x_1 t_1) t_1 ((var x_1) -! F) ((var x_1) -: F) (var x_1))]
-  
+
   [(typeof [((var x_1) -: t_1-) P_0 ...] e_1 t_1+ P_1+ P_1- oo_1)
    -------------- "T-Abs"
    (typeof [P_0 ...]
@@ -632,7 +677,7 @@
            (λ x_1 t_1- t_1+ P_1+ P_1- oo_1)
            TT FF
            Null)]
-  
+
   [(where/hidden #f ,(member (term e_1) '(car cdr)))
    (typeof E_1 e_1 (λ x_0 t_0- t_0+ P_0+ P_0- oo_0) P_1+ P_1- oo_1)
    (typeof E_1 e_2 t_2 P_2+ P_2- oo_2)
@@ -644,7 +689,7 @@
            (subst-P oo_2 x_0 (simplify-P P_0+))
            (subst-P oo_2 x_0 (simplify-P P_0-))
            (subst-oo oo_2 x_0 oo_0))]
-  
+
   [(typeof [P_0 ...] e_1 t_1 P_1+ P_1- oo_1)
    (typeof [P_1+ P_0 ...] e_2 t_2 P_2+ P_2- oo_2)
    (typeof [P_1- P_0 ...] e_3 t_3 P_3+ P_3- oo_3)
@@ -652,15 +697,15 @@
    (typeof [P_0 ...]
            (if e_1 e_2 e_3)
            (t-join t_2 t_3)
-           (OR (AND P_1+ P_2+) 
+           (OR (AND P_1+ P_2+)
                (AND P_1- P_3+))
-           (OR (AND P_1+ P_2-) 
+           (OR (AND P_1+ P_2-)
                (AND P_1- P_3-))
            (oo-join oo_2 oo_3))]
-  
+
   [(typeof [P_0 ...] e_1 t_1 P_1+ P_1- oo_1)
    (where P_let (AND ((var x_1) -: t_1)
-                     (OR (AND ((var x_1) -! F) P_1+) 
+                     (OR (AND ((var x_1) -! F) P_1+)
                          (AND ((var x_1) -: F) P_1-))))
    (typeof [P_let P_0 ...]
            e_2 t_2 P_2+ P_2- oo_2)
@@ -668,33 +713,33 @@
    (typeof [P_0 ...]
            (let ([x_1 e_1]) e_2)
            (subst-t oo_1 x_1 t_2)
-           (subst-P oo_1 x_1 
+           (subst-P oo_1 x_1
                     (simplify-P (AND P_2+ P_let)))
-           (subst-P oo_1 x_1 
+           (subst-P oo_1 x_1
                     (simplify-P (AND P_2- P_let)))
            (subst-oo oo_1 x_1 oo_2))]
-  
+
   [(typeof E_1 e_1 t_1 P_1+ P_1- oo_1)
    (typeof E_1 e_2 t_2 P_2+ P_2- oo_2)
    ------------------------- "T-Cons"
    (typeof E_1 (cons e_1 e_2) (t_1 * t_2) TT FF Null)]
-  
+
   [(typeof E_1 e_1 (t_1 * t_2) P_1+ P_1- oo_1)
    (where x_1 ,(gensym))
    ------------------------- "T-Car"
-   (typeof E_1 
-           (car e_1) 
-           t_1 
+   (typeof E_1
+           (car e_1)
+           t_1
            (subst-P oo_1 x_1 ((obj (CAR) x_1) -! F))
            (subst-P oo_1 x_1 ((obj (CAR) x_1) -: F))
            (subst-oo oo_1 x_1 (obj (CAR) x_1)))]
-  
+
   [(typeof E_1 e_1 (t_1 * t_2) P_1+ P_1- oo_1)
    (where x_1 ,(gensym))
    ------------------------- "T-Cdr"
-   (typeof E_1 
-           (cdr e_1) 
-           t_2 
+   (typeof E_1
+           (cdr e_1)
+           t_2
            (subst-P oo_1 x_1 ((obj (CDR) x_1) -! F))
            (subst-P oo_1 x_1 ((obj (CDR) x_1) -: F))
            (subst-oo oo_1 x_1 (obj (CDR) x_1)))])
@@ -718,7 +763,7 @@
 
 (define-metafunction λTR
   or : e e -> e
-  [(or e_1 e_2) (let ([tmp e_1]) 
+  [(or e_1 e_2) (let ([tmp e_1])
                   (if (ann tmp (U T F))
                       (ann tmp (U T F))
                       e_2))])
@@ -729,18 +774,18 @@
 
 (module+ test
   ; Example 1
-  (check-true 
-   (judgment-holds 
-    (typeof* [((var x) -: Top)] 
+  (check-true
+   (judgment-holds
+    (typeof* [((var x) -: Top)]
              (if (int? (ann x Top))
                  (add1 (ann x Int))
-                 0) 
-             Int 
+                 0)
+             Int
              TT TT
              Null)))
 
-  (check-true 
-   (judgment-holds 
+  (check-true
+   (judgment-holds
     (typeof* []
              (λ ([x : Int])
                (add1 (ann x Int)))
@@ -748,9 +793,9 @@
              TT TT
              Null)))
 
-  (check-true 
-   (judgment-holds 
-    (typeof* [((var x) -: (U Str Int))] 
+  (check-true
+   (judgment-holds
+    (typeof* [((var x) -: (U Str Int))]
              (if (int? (ann x Top))
                  (add1 (ann x Int))
                  (str-len (ann x Str)))
@@ -758,16 +803,16 @@
              TT TT
              Null)))
 
-  (check-true 
-   (judgment-holds 
+  (check-true
+   (judgment-holds
     (typeof* [((var x) -: Top)]
              (int? (ann x Top))
              (U T F)
              ((var x) -: Int) ((var x) -! Int)
              Null)))
 
-  (check-true 
-   (judgment-holds 
+  (check-true
+   (judgment-holds
     (typeof* []
              (λ ([x : Top])
                (int? (ann x Top)))
@@ -777,8 +822,8 @@
 
 
   ;;Example 2
-  (check-true 
-   (judgment-holds 
+  (check-true
+   (judgment-holds
     (typeof* []
              (λ ([x : (U Str Int)])
                (if (int? (ann x Top))
@@ -788,8 +833,8 @@
              TT FF
              Null)))
 
-  (check-true 
-   (judgment-holds 
+  (check-true
+   (judgment-holds
     (typeof* [((var x) -: Top)]
              (if (int? (ann x Top))
                  #t
@@ -799,8 +844,8 @@
              Null)))
 
   ;; Example 3
-  (check-true 
-   (judgment-holds 
+  (check-true
+   (judgment-holds
     (typeof* [((var x) -: (Option Str))]
              (if (ann x Top)
                  (str-len (ann x Str))
@@ -811,18 +856,18 @@
 
 
   (check-true
-   (judgment-holds 
+   (judgment-holds
     (typeof* [((var x) -: Top)]
-             (let ([tmp (int? (ann x Top))]) 
+             (let ([tmp (int? (ann x Top))])
                (ann tmp (U T F)))
              (U T F)
              ((var x) -: Int) ((var x) -! Int)
              Null)))
 
   (check-true
-   (judgment-holds 
+   (judgment-holds
     (typeof* [((var x) -: Top)]
-             (let ([tmp (int? (ann x Top))]) 
+             (let ([tmp (int? (ann x Top))])
                (if (ann tmp (U T F))
                    (ann tmp (U T F))
                    (str? (ann x Top))))
@@ -830,8 +875,8 @@
              ((var x) -: (U Int Str)) ((var x) -! (U Int Str))
              Null)))
 
-  (check-true 
-   (judgment-holds 
+  (check-true
+   (judgment-holds
     (typeof* [((var x) -: Top)]
              (or (int? (ann x Top))
                  (str? (ann x Top)))
@@ -841,7 +886,7 @@
 
   ; Example 4
   (check-true
-   (judgment-holds 
+   (judgment-holds
     (typeof* [((var f) -: (λ x (U Int Str) Int TT FF Null))
               ((var x) -: Top)]
              (if (or (int? (ann x Top))
@@ -855,8 +900,8 @@
 
 
   ; Example 5
-  (check-true 
-   (judgment-holds 
+  (check-true
+   (judgment-holds
     (typeof* [((var x) -: Top) ((var y) -: Top)]
              (if (and (int? (ann x Top)) (str? (ann y Top)))
                  ((+ (ann x Int)) (str-len (ann y Str)))
@@ -866,8 +911,8 @@
              Null)))
 
   ; Example 6
-  (check-false 
-   (judgment-holds 
+  (check-false
+   (judgment-holds
     (typeof* [((var x) -: Top) ((var y) -: Top)]
              (if (and (int? (ann x Top)) (str? (ann y Top)))
                  ((+ (ann x Int)) (str-len (ann y Str)))
@@ -877,8 +922,8 @@
              Null)))
 
   ; Example 7
-  (check-true 
-   (judgment-holds 
+  (check-true
+   (judgment-holds
     (typeof* [((var x) -: Top) ((var y) -: Top)]
              (if (if (int? (ann x Top)) (str? (ann y Top)) #f)
                  ((+ (ann x Int)) (str-len (ann y Str)))
@@ -888,8 +933,8 @@
              Null)))
 
   ; Example 8
-  (check-true 
-   (judgment-holds 
+  (check-true
+   (judgment-holds
     (typeof* [((var x) -: Top)]
              (let ([tmp (str? (ann x Top))])
                (if (ann tmp Top)
@@ -900,8 +945,8 @@
              Null)))
 
   ; Example 9
-  (check-true 
-   (judgment-holds 
+  (check-true
+   (judgment-holds
     (typeof* [((var x) -: Top)]
              (if (let ([tmp (int? (ann x Top))])
                    (if (ann tmp Top)
@@ -919,8 +964,8 @@
 
 
   ; Example 10
-  (check-true 
-   (judgment-holds 
+  (check-true
+   (judgment-holds
     (typeof* [((var p) -: (Top * Top))]
              (if (int? (car (ann p (Top * Top))))
                  (add1 (car (ann p (Int * Top))))
@@ -930,8 +975,8 @@
              Null)))
 
   ; Example 11
-  (check-true 
-   (judgment-holds 
+  (check-true
+   (judgment-holds
     (typeof* [((var p) -: (Top * Top))
               ((var g) -: (λ x (Int * Int) Int TT FF Null))]
              (if (and (int? (car (ann p (Top * Top))))
@@ -944,13 +989,13 @@
              Null)))
 
   ;Example 12
-  (check-true 
-   (judgment-holds 
+  (check-true
+   (judgment-holds
     (typeof* []
              (λ ([p : (Top * Top)])
                (int? (car (ann p (Top * Top)))))
-             (λ x 
-               (Top * Top) 
+             (λ x
+               (Top * Top)
                (U T F)
                ((obj (CAR) x) -: Int)
                ((obj (CAR) x) -! Int)
@@ -959,13 +1004,13 @@
              FF
              Null)))
 
-  (check-true 
-   (judgment-holds 
+  (check-true
+   (judgment-holds
     (typeof* []
              (λ ([p : (Top * Top)])
                (int? (cdr (ann p (Top * Top)))))
-             (λ x 
-               (Top * Top) 
+             (λ x
+               (Top * Top)
                (U T F)
                ((obj (CDR) x) -: Int)
                ((obj (CDR) x) -! Int)
@@ -975,8 +1020,8 @@
              Null)))
 
   ; Example 13
-  (check-true 
-   (judgment-holds 
+  (check-true
+   (judgment-holds
     (typeof* [((var x) -: Top) ((var y) -: (U Int Str))]
              (if (and (int? (ann x Top)) (str? (ann y Top)))
                  ((+ (ann x Int)) (str-len (ann y Str)))
@@ -988,8 +1033,8 @@
              Null)))
 
   ; Example 14
-  (check-true 
-   (judgment-holds 
+  (check-true
+   (judgment-holds
     (typeof* [((var x) -: Top)]
              (λ ([y : (U Int Str)])
                (if (and (int? (ann x Top)) (str? (ann y Top)))
