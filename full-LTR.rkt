@@ -343,12 +343,15 @@
    ((update t_1 b_1 t_new (pe_1 ...)) * t_2)]
   [(update (t_1 * t_2) b_1 t_new (pe_1 ... CDR))
    (t_1 * (update t_2 b_1 t_new (pe_1 ...)))]
+
   [(update t_1 b_1 t_new (pe_1 ... CAR))
    (update t_1 b_1 (t_new * Top) (pe_1 ...))
    (judgment-holds (non-Pair t_1))]
+
   [(update t_1 b_1 t_new (pe_1 ... CDR))
    (update t_1 b_1 (Top * t_new) (pe_1 ...))
    (judgment-holds (non-Pair t_1))]
+
   [(update t_1 #t t_2 ()) (restrict t_1 t_2)]
   [(update t_1 #f t_2 ()) (remove t_1 t_2)])
 
@@ -635,7 +638,7 @@
                 ((var x) -: (λ y (U) Top TT TT Null))
                 ((var x) -! (λ y (U) Top TT TT Null))
                 Null)]
-  [(δt cons) (λ x Top (U T F)
+  [(δt cons?) (λ x Top (U T F)
                ((var x) -: (Top * Top))
                ((var x) -! (Top * Top))
                Null)])
